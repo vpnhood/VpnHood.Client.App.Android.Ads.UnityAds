@@ -1,7 +1,9 @@
-﻿using Com.Unity3d.Services.Ads.Operation.Load;
-using Com.Unity3d.Services.Core.Webview.Bridge;
+﻿using Com.Unity3d.Services.Core.Webview.Bridge;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace VpnHood.Client.App.Droid.Ads.VhUnityAds.Additions
+namespace Com.Unity3d.Services.Ads.Operation.Load
 {
     public partial class LoadModuleDecorator
     {
