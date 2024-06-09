@@ -32,11 +32,6 @@ jobs:
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
-      with:
-        sdk-api-level: 34 
-
-    - name: Android SDK
-      run: dotnet workload install android
 
     - name: Restore dependencies
       run: dotnet restore
