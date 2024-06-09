@@ -30,6 +30,11 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
+    - name: Setup Android SDK
+      uses: actions/setup-android@v3
+      with:
+        sdk-api-level: 34 
+
     - name: Android SDK
       run: dotnet workload install android
 
