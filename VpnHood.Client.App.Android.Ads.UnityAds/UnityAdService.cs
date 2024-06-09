@@ -12,8 +12,8 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
     private MyAdLoadListener? _adLoadListener;
     private MyAdShowListener? _adShowListener;
     private DateTime _lastLoadAdTime = DateTime.MinValue;
-    private static bool _isUnityAdInitialized = false;
-    private static bool _isUnityAdLoaded = false;
+    private static bool _isUnityAdInitialized;
+    private static bool _isUnityAdLoaded;
 
     public static UnityAdService Create(string adGameId, string adPlacementId, bool testMode = false)
     {
@@ -107,7 +107,7 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         _isUnityAdLoaded = false;
     }
 
-    private class MyAdInitializationListener() : Java.Lang.Object, IUnityAdsInitializationListener
+    private class MyAdInitializationListener : Java.Lang.Object, IUnityAdsInitializationListener
     {
         private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
         public Task<bool> Task => _loadedCompletionSource.Task;
@@ -124,7 +124,7 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         }
     }
 
-    public class MyAdLoadListener() : Java.Lang.Object, IUnityAdsLoadListener
+    private class MyAdLoadListener : Java.Lang.Object, IUnityAdsLoadListener
     {
         private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
         public Task<bool> Task => _loadedCompletionSource.Task;
@@ -141,7 +141,7 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         }
     }
 
-    public class MyAdShowListener() : Java.Lang.Object, IUnityAdsShowListener
+    private class MyAdShowListener : Java.Lang.Object, IUnityAdsShowListener
     {
         private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
         public Task<bool> Task => _loadedCompletionSource.Task;
