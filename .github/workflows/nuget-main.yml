@@ -33,6 +33,9 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
 
+    - name: Android SDK
+      run: dotnet workload install android
+
     - name: Restore dependencies
       run: dotnet restore
 
