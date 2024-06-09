@@ -21,8 +21,14 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         return ret;
     }
 
+    public bool IsCountrySupported(string countryCode)
+    {
+        throw new NotImplementedException();
+    }
+
     public string NetworkName => "UnityAds";
     public AppAdType AdType => AppAdType.InterstitialAd;
+    public DateTime? AdLoadedTime { get; }
 
     public async Task LoadAd(IUiContext uiContext, CancellationToken cancellationToken)
     {
