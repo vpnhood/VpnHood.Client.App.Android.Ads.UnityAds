@@ -31,7 +31,7 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Setup Android SDK
-      uses: actions/setup-android@v3
+      uses: android-actions/setup-android@v2
       with:
         sdk-api-level: 34 
 
