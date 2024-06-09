@@ -5,7 +5,12 @@ VisualStudioVersion = 17.10.34928.147
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VpnHood.Client.App.Android.Ads.UnityAds", "VpnHood.Client.App.Android.Ads.UnityAds\VpnHood.Client.App.Android.Ads.UnityAds.csproj", "{63761376-9057-4A2C-B45B-E25049D0FAC6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{A9B2B42A-B01B-47C1-AE52-3591349139AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "Sample\Sample.csproj", "{A9B2B42A-B01B-47C1-AE52-3591349139AF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7A98153-A1DD-4080-AC02-A4C63CBEDC5C}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\nuget-main.yml = .github\workflows\nuget-main.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<Description>VpnHood Android Ad Library for UnityAds</Description>
 		<TargetFramework>net8.0-android</TargetFramework>
-		<SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+		<SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
 		<RootNamespace>VpnHood.Client.App.Droid.Ads.VhUnityAds</RootNamespace>
 	</PropertyGroup>
 

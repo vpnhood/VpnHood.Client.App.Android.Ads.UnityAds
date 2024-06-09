@@ -1,19 +1,19 @@
-﻿using Com.Unity3d.Ads;
+﻿using Android.Content;
+using Com.Unity3d.Ads;
 using VpnHood.Client.App.Abstractions;
 using VpnHood.Client.Device;
 using VpnHood.Client.Device.Droid;
+using VpnHood.Common.Exceptions;
 using VpnHood.Common.Utils;
 
 namespace VpnHood.Client.App.Droid.Ads.VhUnityAds;
 
 public class UnityAdService(string adGameId, string adPlacementId, bool testMode = false) : IAppAdService
 {
-    private MyAdInitializationListener? _adInitializationListener;
-    private MyAdLoadListener? _adLoadListener;
-    private MyAdShowListener? _adShowListener;
-    private DateTime _lastLoadAdTime = DateTime.MinValue;
     private static bool _isUnityAdInitialized;
-    private static bool _isUnityAdLoaded;
+    public string NetworkName => "UnityAds";
+    public AppAdType AdType => AppAdType.InterstitialAd;
+    public DateTime? AdLoadedTime { get; private set; }
 
     public static UnityAdService Create(string adGameId, string adPlacementId, bool testMode = false)
     {
@@ -23,12 +23,25 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
     public bool IsCountrySupported(string countryCode)
     {
-        throw new NotImplementedException();
+        return countryCode != "IR";
     }
 
-    public string NetworkName => "UnityAds";
-    public AppAdType AdType => AppAdType.InterstitialAd;
-    public DateTime? AdLoadedTime { get; }
+    private async Task EnsureUnityAdInitialized(Context context, CancellationToken cancellationToken)
+    {
+        if (_isUnityAdInitialized)
+            return;
+
+        var adInitializationListener = new MyAdInitializationListener();
+        UnityAds.Initialize(context, adGameId, testMode, adInitializationListener);
+
+        var cancellationTask = new TaskCompletionSource();
+        cancellationToken.Register(cancellationTask.SetResult);
+        await Task.WhenAny(adInitializationListener.Task, cancellationTask.Task).VhConfigureAwait();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await adInitializationListener.Task.VhConfigureAwait();
+        _isUnityAdInitialized = true;
+    }
 
     public async Task LoadAd(IUiContext uiContext, CancellationToken cancellationToken)
     {
@@ -37,57 +50,23 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         if (activity.IsDestroyed)
             throw new AdException("MainActivity has been destroyed before loading the ad.");
 
-        // Initialize ad
-        if (!_isUnityAdInitialized)
-        {
-            try
-            {
-                _adInitializationListener = new MyAdInitializationListener();
-                activity.RunOnUiThread(() => UnityAds.Initialize(
-                    activity, adGameId, testMode, _adInitializationListener));
+        // Initialize unity
+        await EnsureUnityAdInitialized(activity, cancellationToken);
 
-                var cancellationTask = new TaskCompletionSource();
-                cancellationToken.Register(cancellationTask.SetResult);
-                await Task.WhenAny(_adInitializationListener.Task, cancellationTask.Task).VhConfigureAwait();
-                cancellationToken.ThrowIfCancellationRequested();
-
-                _isUnityAdInitialized = await _adInitializationListener.Task.VhConfigureAwait();
-                
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                _isUnityAdInitialized = false;
-                if (ex is AdLoadException) throw;
-                throw new AdLoadException($"Failed to load {AdType}.", ex);
-            }
-        }
-
-        // Ad already loaded
-        if (_adLoadListener != null && _lastLoadAdTime.AddHours(1) < DateTime.Now)
-            _isUnityAdLoaded = await _adLoadListener.Task.VhConfigureAwait();
-
+        // reset the last loaded ad
+        AdLoadedTime = null;
 
         // Load a new Ad
-        try
-        {
-            _adLoadListener = new MyAdLoadListener();
-            activity.RunOnUiThread(() => UnityAds.Load(adPlacementId, _adLoadListener));
+        var adLoadListener = new MyAdLoadListener();
+        activity.RunOnUiThread(() => UnityAds.Load(adPlacementId, adLoadListener));
 
-            var cancellationTask = new TaskCompletionSource();
-            cancellationToken.Register(cancellationTask.SetResult);
-            await Task.WhenAny(_adLoadListener.Task, cancellationTask.Task).VhConfigureAwait();
-            cancellationToken.ThrowIfCancellationRequested();
+        var cancellationTask = new TaskCompletionSource();
+        cancellationToken.Register(cancellationTask.SetResult);
+        await Task.WhenAny(adLoadListener.Task, cancellationTask.Task).VhConfigureAwait();
+        cancellationToken.ThrowIfCancellationRequested();
 
-            _isUnityAdLoaded = await _adLoadListener.Task.VhConfigureAwait();
-            _lastLoadAdTime = DateTime.Now;
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            _isUnityAdLoaded = false;
-            _lastLoadAdTime = DateTime.MinValue;
-            if (ex is AdLoadException) throw;
-            throw new AdLoadException($"Failed to load {AdType}.", ex);
-        }
+        await adLoadListener.Task.VhConfigureAwait();
+        AdLoadedTime = DateTime.Now;
     }
 
     public async Task ShowAd(IUiContext uiContext, string? customData, CancellationToken cancellationToken)
@@ -97,30 +76,37 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         if (activity.IsDestroyed)
             throw new AdException("MainActivity has been destroyed before showing the ad.");
 
-        if (!_isUnityAdLoaded)
+        if (AdLoadedTime == null)
             throw new AdException($"The {AdType} has not been loaded.");
 
-        _adShowListener = new MyAdShowListener();
-        activity.RunOnUiThread(() => UnityAds.Show(activity, adPlacementId, _adShowListener));
+        try
+        {
 
-        // wait for show or dismiss
-        var cancellationTask = new TaskCompletionSource();
-        cancellationToken.Register(cancellationTask.SetResult);
-        await Task.WhenAny(_adShowListener.Task, cancellationTask.Task).VhConfigureAwait();
-        cancellationToken.ThrowIfCancellationRequested();
+            var adShowListener = new MyAdShowListener();
+            activity.RunOnUiThread(() => UnityAds.Show(activity, adPlacementId, adShowListener));
 
-        await _adShowListener.Task.VhConfigureAwait();
-        _isUnityAdLoaded = false;
+            // wait for show or dismiss
+            var cancellationTask = new TaskCompletionSource();
+            cancellationToken.Register(cancellationTask.SetResult);
+            await Task.WhenAny(adShowListener.Task, cancellationTask.Task).VhConfigureAwait();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await adShowListener.Task.VhConfigureAwait();
+        }
+        finally
+        {
+            AdLoadedTime = null;
+        }
     }
 
     private class MyAdInitializationListener : Java.Lang.Object, IUnityAdsInitializationListener
     {
-        private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
-        public Task<bool> Task => _loadedCompletionSource.Task;
+        private readonly TaskCompletionSource _loadedCompletionSource = new();
+        public Task Task => _loadedCompletionSource.Task;
 
         public void OnInitializationComplete()
         {
-            _loadedCompletionSource.TrySetResult(true);
+            _loadedCompletionSource.TrySetResult();
         }
 
         public void OnInitializationFailed(UnityAds.UnityAdsInitializationError? error, string? message)
@@ -132,12 +118,12 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
     private class MyAdLoadListener : Java.Lang.Object, IUnityAdsLoadListener
     {
-        private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
-        public Task<bool> Task => _loadedCompletionSource.Task;
+        private readonly TaskCompletionSource _loadedCompletionSource = new();
+        public Task Task => _loadedCompletionSource.Task;
 
         public void OnUnityAdsAdLoaded(string? adPlacementId)
         {
-            _loadedCompletionSource.TrySetResult(true);
+            _loadedCompletionSource.TrySetResult();
         }
 
         public void OnUnityAdsFailedToLoad(string? adUnitId, UnityAds.UnityAdsLoadError? error, string? message)
@@ -149,12 +135,12 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
     private class MyAdShowListener : Java.Lang.Object, IUnityAdsShowListener
     {
-        private readonly TaskCompletionSource<bool> _loadedCompletionSource = new();
-        public Task<bool> Task => _loadedCompletionSource.Task;
+        private readonly TaskCompletionSource _loadedCompletionSource = new();
+        public Task Task => _loadedCompletionSource.Task;
 
         public void OnUnityAdsShowStart(string? adPlacementId)
         {
-            _loadedCompletionSource.TrySetResult(true);
+            _loadedCompletionSource.TrySetResult();
         }
         public void OnUnityAdsShowFailure(string? adPlacementId, UnityAds.UnityAdsShowError? error, string? message)
         {
@@ -169,7 +155,9 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         {
         }
     }
+
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
     }
 }
