@@ -11,6 +11,7 @@ jobs:
   
     env:
         BUILD_CONFIG: 'Release'
+        PROJECT_NAME: 'VpnHood.Client.App.Android.Ads.UnityAds'
 
     runs-on: ubuntu-latest
 
@@ -20,7 +21,7 @@ jobs:
     - name: Bump versions
       uses: SiqiLu/dotnet-bump-version@2.0.0
       with:
-        version_files: "**/VpnHood.Client.App.Android.Ads.UnityAds.csproj"
+        version_files: "**/$PROJECT_NAME.csproj"
         version_mask: 0.0.1.0
         version_overwrite: "*.*.*.*"
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -31,19 +32,19 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v2
 
     - name: Android SDK
       run: dotnet workload install android
 
     - name: Restore dependencies
-      run: dotnet restore VpnHood.Client.App.Android.Ads.UnityAds
+      run: dotnet restore $PROJECT_NAME
 
     - name: Build Solution
-      run: dotnet build VpnHood.Client.App.Android.Ads.UnityAds --no-restore --configuration $BUILD_CONFIG
+      run: dotnet build $PROJECT_NAME --no-restore --configuration $BUILD_CONFIG
 
     - name: Pack All Projects
-      run: dotnet pack VpnHood.Client.App.Android.Ads.UnityAds --configuration $BUILD_CONFIG -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+      run: dotnet pack $PROJECT_NAME --configuration $BUILD_CONFIG -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 
     - name: Publish
       run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
