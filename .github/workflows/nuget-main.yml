@@ -33,6 +33,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Android SDK
+      run: dotnet workload install android
+
+
     - name: Build Solution
       run: dotnet build --no-restore --configuration $BUILD_CONFIG
 
