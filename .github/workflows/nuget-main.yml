@@ -37,13 +37,13 @@ jobs:
       run: dotnet workload install android
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore VpnHood.Client.App.Android.Ads.UnityAds
 
     - name: Build Solution
-      run: dotnet build --no-restore --configuration $BUILD_CONFIG
+      run: dotnet build VpnHood.Client.App.Android.Ads.UnityAds --no-restore --configuration $BUILD_CONFIG
 
     - name: Pack All Projects
-      run: dotnet pack --configuration $BUILD_CONFIG -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
+      run: dotnet pack VpnHood.Client.App.Android.Ads.UnityAds --configuration $BUILD_CONFIG -p:IncludeSymbols=true -p:SymbolPackageFormat=snupkg
 
     - name: Publish
       run: nuget push **\*.nupkg -Source 'https://api.nuget.org/v3/index.json' -ApiKey ${{secrets.NUGET_API_KEY}}
