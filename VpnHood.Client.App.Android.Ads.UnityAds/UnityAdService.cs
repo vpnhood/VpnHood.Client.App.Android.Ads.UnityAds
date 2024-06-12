@@ -111,8 +111,8 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
         public void OnInitializationFailed(UnityAds.UnityAdsInitializationError? error, string? message)
         {
-            _loadedCompletionSource.TrySetException(new AdLoadException(
-                $"Unity Ads initialization failed with Error: {error}, Message: {message}"));
+            _loadedCompletionSource.TrySetException(new LoadAdException(
+                $"Unity Ads initialization failed. Error: {error}, Message: {message}"));
         }
     }
 
@@ -128,8 +128,8 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
         public void OnUnityAdsFailedToLoad(string? adUnitId, UnityAds.UnityAdsLoadError? error, string? message)
         {
-            _loadedCompletionSource.TrySetException(new AdLoadException(
-                $"Unity Ads failed to load ad for AdUnitId: {adUnitId} with Error: {error}, Message: {message}"));
+            _loadedCompletionSource.TrySetException(new LoadAdException(
+                $"Unity Ads failed to load ad. AdUnitId: {adUnitId}, Error: {error}, Message: {message}"));
         }
     }
 
@@ -144,8 +144,8 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         }
         public void OnUnityAdsShowFailure(string? adPlacementId, UnityAds.UnityAdsShowError? error, string? message)
         {
-            _loadedCompletionSource.TrySetException(new AdException(
-                $"Unity Ads failed to show ad for AdPlacementId: {adPlacementId} with Error: {error}, Message: {message}"));
+            _loadedCompletionSource.TrySetException(new ShowAdException(
+                $"Unity Ads failed to show ad. AdPlacementId: {adPlacementId}, Error: {error}, Message: {message}"));
         }
 
         public void OnUnityAdsShowClick(string? adPlacementId)

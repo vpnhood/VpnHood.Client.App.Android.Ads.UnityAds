@@ -34,8 +34,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="VpnHood.Client.App.Abstractions" Version="4.5.525-prerelease" />
-	  <PackageReference Include="VpnHood.Client.Device.Android" Version="4.5.525-prerelease" />
+	  <PackageReference Include="VpnHood.Client.App.Abstractions" Version="4.5.526-prerelease" />
+	  <PackageReference Include="VpnHood.Client.Device.Android" Version="4.5.526-prerelease" />
 	</ItemGroup>
 
 </Project>
