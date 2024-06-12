@@ -144,7 +144,7 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         }
         public void OnUnityAdsShowFailure(string? adPlacementId, UnityAds.UnityAdsShowError? error, string? message)
         {
-            _loadedCompletionSource.TrySetException(new AdLoadException(
+            _loadedCompletionSource.TrySetException(new AdException(
                 $"Unity Ads failed to show ad for AdPlacementId: {adPlacementId} with Error: {error}, Message: {message}"));
         }
 
