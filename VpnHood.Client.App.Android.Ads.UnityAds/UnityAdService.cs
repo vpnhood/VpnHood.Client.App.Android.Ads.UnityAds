@@ -135,16 +135,16 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
 
     private class MyAdShowListener : Java.Lang.Object, IUnityAdsShowListener
     {
-        private readonly TaskCompletionSource _loadedCompletionSource = new();
-        public Task Task => _loadedCompletionSource.Task;
+        private readonly TaskCompletionSource _showCompletionSource = new();
+        public Task Task => _showCompletionSource.Task;
 
         public void OnUnityAdsShowStart(string? adPlacementId)
         {
-            _loadedCompletionSource.TrySetResult();
         }
+
         public void OnUnityAdsShowFailure(string? adPlacementId, UnityAds.UnityAdsShowError? error, string? message)
         {
-            _loadedCompletionSource.TrySetException(new ShowAdException(
+            _showCompletionSource.TrySetException(new ShowAdException(
                 $"Unity Ads failed to show ad. AdPlacementId: {adPlacementId}, Error: {error}, Message: {message}"));
         }
 
@@ -153,6 +153,7 @@ public class UnityAdService(string adGameId, string adPlacementId, bool testMode
         }
         public void OnUnityAdsShowComplete(string? adPlacementId, UnityAds.UnityAdsShowCompletionState? state)
         {
+            _showCompletionSource.TrySetResult();
         }
     }
 
