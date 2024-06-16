@@ -1,6 +1,6 @@
 using VpnHood.Client.App.Droid.Ads.VhUnityAds;
 using VpnHood.Client.Device.Droid;
-using VpnHood.Client.Device.Droid.Utils;
+using VpnHood.Client.Device.Droid.ActivityEvents;
 
 namespace Sample;
 
