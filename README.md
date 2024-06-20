@@ -1,1 +1,2 @@
-This project has stopped as UnityAds content policy does not support VPN apps.
+# Note
+This project has been stopped as UnityAds content policy does not support VPN apps.
